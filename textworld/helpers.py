@@ -16,7 +16,7 @@ from textworld.agents import HumanAgent
 from textworld.generator import make_game, compile_game
 
 
-def start(path: str, request_infos: Optional[EnvInfos] = None,
+def start(path: str, request_infos: Optional[EnvInfos] = None, max_retries: int = 0,
           wrappers: List[callable] = []) -> Environment:
     """ Starts a TextWorld environment to play a game.
 
@@ -40,7 +40,7 @@ def start(path: str, request_infos: Optional[EnvInfos] = None,
 
     # Guess the backend from the extension.
     Env = textworld.envs._guess_backend(path)
-    env = Env(request_infos)
+    env = Env(request_infos, max_retries=max_retries)
 
     if TWInform7.compatible(path):
         wrappers = [TWInform7] + list(wrappers)
