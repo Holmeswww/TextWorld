@@ -57,15 +57,27 @@ class JerichoEnv(textworld.Environment):
             self._jericho.seed(self._seed)
 
         return self._seed
+    
+    def dead_string(self, string):
+        patterns = [
+            "***  ***\n",
+            "****  You have died  ****",
+        ]
+        for pattern in patterns:
+            if pattern in string:
+                return True, pattern
+        
+        return False, None
 
     def _gather_infos(self):
         """ Adds additional information to the internal state. """
         self.state.feedback = self.state.raw
 
-        if "****  You have died  ****" in self.state.feedback:
-            # remove everything after "****  You have died  ****" from the feedback
-            death_message_index = self.state.feedback.find("****  You have died  ****")
-            self.state.feedback = self.state.feedback[:death_message_index + len("****  You have died  ****")]
+        is_dead, dead_string = self.dead_string(self.state.raw)
+
+        if is_dead:
+            death_message_index = self.state.feedback.find(dead_string)
+            self.state.feedback = self.state.feedback[:death_message_index + len(dead_string)]
 
         if not self._jericho.is_fully_supported:
             return  # No more information can be gathered.
@@ -78,7 +90,7 @@ class JerichoEnv(textworld.Environment):
 
         # Deal with information that has different method name in Jericho.
         self.state["won"] = self._jericho.victory()
-        self.state["lost"] = self._jericho.game_over() or "****  You have died  ****" in self.state.raw
+        self.state["lost"] = self._jericho.game_over() or is_dead
         self.state.done = self.state.done or self.state["lost"] or self.state["won"]
         self.state["score"] = self._jericho.get_score()
         self.state["moves"] = self._jericho.get_moves()
@@ -137,7 +149,7 @@ class JerichoEnv(textworld.Environment):
         if not self.game_running or not self._reset:
             raise GameNotRunningError()
 
-        if command == "ROLLBACK" and self._max_retries>0:
+        if command.lower() == "rollback" and self._max_retries>0:
             if not self.state["lost"]:
                 self.state.last_command = command.strip()
                 self.state.feedback = "You cannot rollback unless you lose."
