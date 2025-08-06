@@ -129,6 +129,7 @@ class JerichoEnv(textworld.Environment):
 
         self.state = GameState()
         self.state.raw, _ = self._jericho.reset()
+        self.state.hash = self._jericho.get_world_state_hash()
         self._old_state = None
         self._old_jericho_state = None
         self._gather_infos()
@@ -178,6 +179,7 @@ class JerichoEnv(textworld.Environment):
         self.state.raw, _, self.state.done, _ = res
         self._gather_infos()
 
+        self.state.hash = self._jericho.get_world_state_hash()
         self.state.done = self.state["won"] or (self.state.done and not self._roll_back_available(self._jericho.get_world_state_hash()))
         return self.state, self.state.score, self.state.done
 
