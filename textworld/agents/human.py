@@ -15,6 +15,8 @@ try:
     prompt_toolkit_available = sys.stdout.isatty()
 except ImportError:
     pass
+except AttributeError:
+    pass
 
 try:
     # For command line history when prompt_toolkit is not available.
